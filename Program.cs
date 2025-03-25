@@ -29,6 +29,49 @@ namespace NovarinRPCManager
 
             //System.Threading.Thread.Sleep(5000);
 
+            if (launchArgs.OpenedByDiscord)
+            {
+                Console.WriteLine("Opened by Discord, waiting for Discord callback for join info");
+
+                DateTime startTime = DateTime.UtcNow;
+
+                var discord = new Discord.Discord(CLIENT_ID, (UInt64)Discord.CreateFlags.Default);
+
+                // Initialize event handlers and other functionalities here
+                discord.SetLogHook(LogLevel.Debug, (level, message) =>
+                {
+                    Console.WriteLine($"Log[{level}]: {message}");
+                });
+
+                var activityManager = discord.GetActivityManager();
+                activityManager.RegisterCommand(Assembly.GetEntryAssembly().Location);
+
+                activityManager.OnActivityJoin += (secret) =>
+                {
+                    Console.WriteLine($"Join Secret Received: {secret}");
+                    string[] splitSecret = secret.Split('+');
+                    string url = $"https://novarin.cc/discord-redirect-place?id={splitSecret[0]}&autojoinJob={splitSecret[1]}";
+                    Process.Start(url);
+                    return;
+                };
+
+                while (true)
+                {
+                    // Timeout after 1 minute
+                    if (DateTime.UtcNow.Subtract(startTime).TotalSeconds > 60)
+                    {
+                        Console.WriteLine("Timed out waiting for Discord callback");
+                        return;
+                    }
+                    discord.RunCallbacks();
+                }
+            }
+            else if (launchArgs.ProccessID == 0)
+            {
+                Console.WriteLine("No process ID provided, stopping the RPC");
+                return;
+            }
+
             try
             {
                 robloxGameProccess = Process.GetProcessById(launchArgs.ProccessID);
@@ -91,12 +134,24 @@ namespace NovarinRPCManager
             }
 
             var activityManager = discord.GetActivityManager();
-            activityManager.RegisterCommand(launchProtocol + "://discordrpc+");
+            activityManager.RegisterCommand(Assembly.GetEntryAssembly().Location);
 
             long startPlayTime = (long)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
             int loopsTillPlayerCountCheck = 50;
             int failureStrikes = 0;
+
+            activityManager.OnActivityJoin += (secret) =>
+            {
+                Console.WriteLine($"Join Secret Received: {secret}");
+                robloxGameProccess.Close();
+                string[] splitSecret = secret.Split('+');
+                string url = $"https://novarin.cc/discord-redirect-place?id={splitSecret[0]}&autojoinJob={splitSecret[1]}";
+                Process.Start(url);
+                return;
+            };
+
+
             // Main loop
             while (true)
             {
@@ -228,14 +283,16 @@ namespace NovarinRPCManager
 
     class RPCLaunchArgs
     {
-        [Option('g', "gameid", Required = true)]
+        [Option('g', "gameid", Required = false)]
         public string GameID { get; set; }
-        [Option('j', "jobid", Required = true)]
+        [Option('j', "jobid", Required = false)]
         public string JobID { get; set; }
-        [Option('l', "launchprotocol", Required = true)]
+        [Option('l', "launchprotocol", Required = false)]
         public string LaunchProtocol { get; set; }
-        [Option('p', "processid", Required = true)]
+        [Option('p', "processid", Required = false)]
         public int ProccessID { get; set; }
+        [Option('o', "discord-open", Required = false)]
+        public bool OpenedByDiscord { get; set; }
 
     }
 
