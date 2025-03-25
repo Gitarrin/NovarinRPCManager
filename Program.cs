@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using CommandLine;
 using Discord;
@@ -20,13 +19,11 @@ namespace NovarinRPCManager
 
         static void Main(string[] args)
         {
-            Parser.Default.ParseArguments<RPCLaunchArgs>(args)
-                .WithParsed(parsedArgs => launchArgs = parsedArgs)
-                .WithNotParsed(errors =>
-                {
-                    Console.WriteLine("Failed to parse arguments");
-                    return;
-                });
+            if (!Parser.Default.ParseArguments(args, launchArgs))
+            {
+                Console.WriteLine("Failed to parse arguments");
+                return;
+            }
 
             //Console.ReadLine();
 
@@ -54,7 +51,7 @@ namespace NovarinRPCManager
                     Console.WriteLine($"Join Secret Received: {secret}");
                     string[] splitSecret = secret.Split('+');
                     string url = $"https://novarin.cc/discord-redirect-place?id={splitSecret[0]}&autojoinJob={splitSecret[1]}";
-                    StartProcess(url);
+                    Process.Start(url);
                     Environment.Exit(0);
                     return;
                 };
@@ -96,7 +93,7 @@ namespace NovarinRPCManager
             Process[] discordProcesses = Process.GetProcessesByName("Discord");
             if (discordProcesses.Length == 0)
             {
-                Console.WriteLine("Discord is not running, waiting until it is.");
+                Console.WriteLine("Discord is not running, waiting untill it is.");
                 while (discordProcesses.Length == 0)
                 {
                     System.Threading.Thread.Sleep(1000);
@@ -177,7 +174,7 @@ namespace NovarinRPCManager
                 catch (Exception e) { }
                 string[] splitSecret = secret.Split('+');
                 string url = $"https://novarin.cc/discord-redirect-place?id={splitSecret[0]}&autojoinJob={splitSecret[1]}";
-                StartProcess(url);
+                Process.Start(url);
                 Environment.Exit(0);
                 return;
             };
@@ -186,7 +183,7 @@ namespace NovarinRPCManager
             // Main loop
             while (true)
             {
-
+                
                 if (failureStrikes >= 5)
                 {
                     Console.WriteLine("Failed to update activity 5 times in a row, stopping the RPC");
@@ -215,31 +212,31 @@ namespace NovarinRPCManager
                         break;
                     }
 
-                    activityManager.UpdateActivity(new Discord.Activity
+                    activityManager.UpdateActivity(new Activity
                     {
                         State = "Playing",
                         Details = "Playing \"" + place.Name + "\"",
                         Timestamps =
-                                        {
-                                            Start = startPlayTime,
-                                        },
+                        {
+                            Start = startPlayTime,
+                        },
                         Assets =
-                                        {
-                                            LargeImage = "novarin_logo",
-                                            LargeText = "Novarin"
-                                        },
+                        {
+                            LargeImage = "novarin_logo",
+                            LargeText = "Novarin"
+                        },
                         Party =
-                                        {
-                                            Id = $"{jobId}",
-                                            Size = {
-                                                CurrentSize = playersInJob.PlayerCount,
-                                                MaxSize = playersInJob.MaxPlayers,
-                                            },
-                                        },
+                        {
+                            Id = $"{jobId}",
+                            Size = {
+                                CurrentSize = playersInJob.PlayerCount,
+                                MaxSize = playersInJob.MaxPlayers,
+                            },
+                        },
                         Secrets =
-                                        {
-                                            Join = $"{placeId}+{jobId}",
-                                        },
+                        {
+                            Join = $"{placeId}+{jobId}",
+                        },
                         Instance = true,
                     }, (res) =>
                     {
@@ -264,8 +261,7 @@ namespace NovarinRPCManager
                 try
                 {
                     discord.RunCallbacks();
-                }
-                catch (Exception e)
+                } catch (Exception e)
                 {
                     Console.WriteLine("Failed to run Discord callbacks: " + e.Message);
                     failureStrikes++;
@@ -318,21 +314,6 @@ namespace NovarinRPCManager
             }
         }
 
-        private static void StartProcess(string url)
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                Process.Start("xdg-open", url);
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                Process.Start("open", url);
-            }
-        }
     }
 
     class RPCLaunchArgs
