@@ -44,7 +44,7 @@ namespace NovarinRPCManager
                 });
 
                 var activityManager = discord.GetActivityManager();
-                activityManager.RegisterCommand(Assembly.GetEntryAssembly().Location);
+                activityManager.RegisterCommand(Assembly.GetEntryAssembly().Location + " -o");
 
                 activityManager.OnActivityJoin += (secret) =>
                 {
@@ -52,6 +52,7 @@ namespace NovarinRPCManager
                     string[] splitSecret = secret.Split('+');
                     string url = $"https://novarin.cc/discord-redirect-place?id={splitSecret[0]}&autojoinJob={splitSecret[1]}";
                     Process.Start(url);
+                    Environment.Exit(0);
                     return;
                 };
 
@@ -61,6 +62,7 @@ namespace NovarinRPCManager
                     if (DateTime.UtcNow.Subtract(startTime).TotalSeconds > 60)
                     {
                         Console.WriteLine("Timed out waiting for Discord callback");
+                        Environment.Exit(0);
                         return;
                     }
                     discord.RunCallbacks();
@@ -87,15 +89,36 @@ namespace NovarinRPCManager
                 return;
             }
 
+            // We check if discord is running before we start the RPC
+            Process[] discordProcesses = Process.GetProcessesByName("Discord");
+            if (discordProcesses.Length == 0)
+            {
+                Console.WriteLine("Discord is not running, waiting untill it is.");
+                while (discordProcesses.Length == 0)
+                {
+                    System.Threading.Thread.Sleep(1000);
+                    discordProcesses = Process.GetProcessesByName("Discord");
+                    if (robloxGameProccess.HasExited)
+                    {
+                        Console.WriteLine("Roblox process has exited, stopping the RPC");
+                        Environment.Exit(0);
+                        return;
+                    }
+                }
+                // Discord has opened, we'll wait a bit for it to finish starting up
+                System.Threading.Thread.Sleep(10000);
+            }
+
             try
             {
                 DoRPCOfPlace(robloxGameProccess, launchArgs.GameID, launchArgs.JobID, launchArgs.LaunchProtocol);
             }
             catch (Exception e)
             {
-                Console.WriteLine("An error occurred: " + e.Message);
-                Console.WriteLine(e.StackTrace);
-                Console.ReadLine();
+                //Console.WriteLine("An error occurred: " + e.Message);
+                //Console.WriteLine(e.StackTrace);
+                //Console.ReadLine();
+                throw e; // just for debugging lol
             }
         }
 
@@ -134,7 +157,7 @@ namespace NovarinRPCManager
             }
 
             var activityManager = discord.GetActivityManager();
-            activityManager.RegisterCommand(Assembly.GetEntryAssembly().Location);
+            activityManager.RegisterCommand(Assembly.GetEntryAssembly().Location + " -o");
 
             long startPlayTime = (long)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
@@ -144,10 +167,15 @@ namespace NovarinRPCManager
             activityManager.OnActivityJoin += (secret) =>
             {
                 Console.WriteLine($"Join Secret Received: {secret}");
-                robloxGameProccess.Close();
+                try
+                {
+                    robloxProcess.CloseMainWindow();
+                }
+                catch (Exception e) { }
                 string[] splitSecret = secret.Split('+');
                 string url = $"https://novarin.cc/discord-redirect-place?id={splitSecret[0]}&autojoinJob={splitSecret[1]}";
                 Process.Start(url);
+                Environment.Exit(0);
                 return;
             };
 
@@ -230,7 +258,14 @@ namespace NovarinRPCManager
                     Console.WriteLine("Roblox process has exited, stopping the RPC");
                     return;
                 }
-                discord.RunCallbacks();
+                try
+                {
+                    discord.RunCallbacks();
+                } catch (Exception e)
+                {
+                    Console.WriteLine("Failed to run Discord callbacks: " + e.Message);
+                    failureStrikes++;
+                }
                 System.Threading.Thread.Sleep(1000 / 5); // Run at 5 FPS
                 loopsTillPlayerCountCheck++;
             }
