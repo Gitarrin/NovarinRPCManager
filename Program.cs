@@ -50,7 +50,7 @@ namespace NovarinRPCManager
                 {
                     Console.WriteLine($"Join Secret Received: {secret}");
                     string[] splitSecret = secret.Split('+');
-                    string url = $"https://novarin.cc/discord-redirect-place?id={splitSecret[0]}&autojoinJob={splitSecret[1]}";
+                    string url = $"https://novarin.cc/discord-redirect-place?id={splitSecret[0]}&autoJoinJob={splitSecret[1]}";
                     Process.Start(url);
                     Environment.Exit(0);
                     return;

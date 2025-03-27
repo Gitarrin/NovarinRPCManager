@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("NovarinRPCManager")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Novarin RPC Manager")]
+[assembly: AssemblyDescription("Adds RPC to the roblox process created by Novarin")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("NovarinRPCManager")]
+[assembly: AssemblyCompany("Novarin")]
+[assembly: AssemblyProduct("Novarin")]
 [assembly: AssemblyCopyright("Copyright ©  2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
