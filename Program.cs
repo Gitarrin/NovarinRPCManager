@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Text;
 using CommandLine;
 using Discord;
 using Newtonsoft.Json;
@@ -14,7 +11,7 @@ namespace NovarinRPCManager
     class Program
     {
         public static Process robloxGameProccess;
-        private const long CLIENT_ID = 1353418280349470801; // Replace with your actual client ID
+        private const long CLIENT_ID = 1353418280349470801;
         public static RPCLaunchArgs launchArgs = new RPCLaunchArgs();
 
         static void Main(string[] args)
@@ -35,7 +32,7 @@ namespace NovarinRPCManager
 
                 DateTime startTime = DateTime.UtcNow;
 
-                var discord = new Discord.Discord(CLIENT_ID, (UInt64)Discord.CreateFlags.Default);
+                var discord = new Discord.Discord(CLIENT_ID, (UInt64)CreateFlags.Default);
 
                 // Initialize event handlers and other functionalities here
                 discord.SetLogHook(LogLevel.Debug, (level, message) =>
@@ -85,7 +82,7 @@ namespace NovarinRPCManager
             }
             catch (Exception e)
             {
-                Console.WriteLine("Failed to find Roblox process with ID: " + launchArgs.ProccessID);
+                Console.WriteLine("Failed to find Roblox process with ID: " + launchArgs.ProccessID + $" ({e.Message})");
                 return;
             }
 
@@ -111,7 +108,8 @@ namespace NovarinRPCManager
 
             try
             {
-                DoRPCOfPlace(robloxGameProccess, launchArgs.GameID, launchArgs.JobID, launchArgs.LaunchProtocol);
+				// DoRPCOfPlace(robloxGameProccess, launchArgs.GameID, launchArgs.JobID, launchArgs.LaunchProtocol)
+				DoRPCOfPlace(robloxGameProccess, launchArgs);
             }
             catch (Exception e)
             {
@@ -122,9 +120,9 @@ namespace NovarinRPCManager
             }
         }
 
-        public static void DoRPCOfPlace(Process robloxProcess, string placeId, string jobId, string launchProtocol)
+        public static void DoRPCOfPlace(Process robloxProcess, RPCLaunchArgs launchArgs)
         {
-            var discord = new Discord.Discord(CLIENT_ID, (UInt64)Discord.CreateFlags.Default);
+            var discord = new Discord.Discord(CLIENT_ID, (UInt64)CreateFlags.Default);
 
             // Initialize event handlers and other functionalities here
             discord.SetLogHook(LogLevel.Debug, (level, message) =>
@@ -132,7 +130,7 @@ namespace NovarinRPCManager
                 Console.WriteLine($"Log[{level}]: {message}");
             });
 
-            PlaceInfo place = GetPlaceInfo(placeId);
+            PlaceInfo place = GetPlaceInfo(launchArgs.GameID);
             if (place == null)
             {
                 Console.WriteLine("Failed to fetch place info from the API");
@@ -144,7 +142,7 @@ namespace NovarinRPCManager
                 return;
             }
 
-            PlayersInJob playersInJob = GetPlayersInJob(jobId);
+            PlayersInJob playersInJob = GetPlayersInJob(launchArgs.JobID);
             if (playersInJob == null)
             {
                 Console.WriteLine("Failed to fetch player count from the API");
@@ -171,7 +169,7 @@ namespace NovarinRPCManager
                 {
                     robloxProcess.CloseMainWindow();
                 }
-                catch (Exception e) { }
+                catch (Exception) { }
                 string[] splitSecret = secret.Split('+');
                 string url = $"https://novarin.cc/discord-redirect-place?id={splitSecret[0]}&autojoinJob={splitSecret[1]}";
                 Process.Start(url);
@@ -193,7 +191,7 @@ namespace NovarinRPCManager
                 if (loopsTillPlayerCountCheck >= 50)
                 {
                     loopsTillPlayerCountCheck = 0;
-                    playersInJob = GetPlayersInJob(jobId);
+                    playersInJob = GetPlayersInJob(launchArgs.JobID);
                     if (playersInJob == null)
                     {
                         Console.WriteLine("Failed to fetch player count from the API");
@@ -227,7 +225,7 @@ namespace NovarinRPCManager
                         },
                         Party =
                         {
-                            Id = $"{jobId}",
+                            Id = $"{launchArgs.JobID}",
                             Size = {
                                 CurrentSize = playersInJob.PlayerCount,
                                 MaxSize = playersInJob.MaxPlayers,
@@ -235,12 +233,12 @@ namespace NovarinRPCManager
                         },
                         Secrets =
                         {
-                            Join = $"{placeId}+{jobId}",
+                            Join = $"{launchArgs.GameID}+{launchArgs.JobID}",
                         },
                         Instance = true,
                     }, (res) =>
                     {
-                        if (res == Discord.Result.Ok)
+                        if (res == Result.Ok)
                         {
                             Console.WriteLine("Activity updated successfully");
                         }
@@ -290,7 +288,7 @@ namespace NovarinRPCManager
                     return JsonConvert.DeserializeObject<PlaceInfo>(receivedClientData);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }
@@ -308,7 +306,7 @@ namespace NovarinRPCManager
                     return JsonConvert.DeserializeObject<PlayersInJob>(receivedClientData);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }
