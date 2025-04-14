@@ -92,6 +92,6 @@
     <Error Condition="!Exists('..\packages\ILMerge.3.0.41\build\ILMerge.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ILMerge.3.0.41\build\ILMerge.props'))" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>"$(SolutionDir)packages\ILMerge.3.0.41\tools\net452\ILMerge.exe" /target:winexe /out:"$(TargetDir)MergedRPCApp.exe" "$(TargetPath)" "$(TargetDir)Newtonsoft.Json.dll" "$(TargetDir)CommandLine.dll"</PostBuildEvent>
+    <PostBuildEvent>"$(SolutionDir)packages\ILMerge.3.0.41\tools\net452\ILMerge.exe" /target:winexe /out:"$(TargetDir)MergedRPCApp.exe" "$(TargetPath)" "$(TargetDir)Newtonsoft.Json.dll" "$(TargetDir)CommandLine.dll" /targetplatform:v2,C:\Windows\Microsoft.NET\Framework\v2.0.50727</PostBuildEvent>
   </PropertyGroup>
 </Project>
