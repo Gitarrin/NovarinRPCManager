@@ -13,6 +13,7 @@ namespace NovarinRPCManager
 	{
 		public static Process robloxGameProccess;
 		private const long CLIENT_ID = 1353418280349470801;
+		private const string GAME_BASE = "https://novarin.cc";
 		public static RPCLaunchArgs launchArgs = new RPCLaunchArgs();
 
 		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
@@ -54,7 +55,7 @@ namespace NovarinRPCManager
 				{
 					Log("INFO", $"Join Secret received: {secret}");
 					string[] splitSecret = secret.Split('+');
-					string url = $"https://novarin.cc/discord-redirect-place?id={splitSecret[0]}&autoJoinJob={splitSecret[1]}";
+					string url = $"{GAME_BASE}/discord-redirect-place?id={splitSecret[0]}&autoJoinJob={splitSecret[1]}";
 					Process.Start(url);
 					Environment.Exit(0);
 					return;
@@ -177,7 +178,7 @@ namespace NovarinRPCManager
 				}
 				catch (Exception) { }
 				string[] splitSecret = secret.Split('+');
-				string url = $"https://novarin.cc/discord-redirect-place?id={splitSecret[0]}&autojoinJob={splitSecret[1]}";
+				string url = $"{GAME_BASE}/discord-redirect-place?id={splitSecret[0]}&autojoinJob={splitSecret[1]}";
 				Process.Start(url);
 				Environment.Exit(0);
 				return;
@@ -284,7 +285,7 @@ namespace NovarinRPCManager
 				using (WebClient client = new WebClient())
 				{
 					client.Headers.Add("user-agent", GetUserAgent());
-					string receivedClientData = client.DownloadString("https://novarin.cc/marketplace/productinfo?assetId=" + placeId);
+					string receivedClientData = client.DownloadString($"{GAME_BASE}/marketplace/productinfo?assetId={placeId}");
 					return JsonConvert.DeserializeObject<PlaceInfo>(receivedClientData);
 				}
 			}
@@ -302,7 +303,7 @@ namespace NovarinRPCManager
 				using (WebClient client = new WebClient())
 				{
 					client.Headers.Add("user-agent", GetUserAgent());
-					string receivedClientData = client.DownloadString("https://novarin.cc/app/api/games/playersInJob?jobid=" + jobId);
+					string receivedClientData = client.DownloadString($"{GAME_BASE}/app/api/games/playersInJob?jobid={jobId}");
 					return JsonConvert.DeserializeObject<PlayersInJob>(receivedClientData);
 				}
 			}
