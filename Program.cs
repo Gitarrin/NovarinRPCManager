@@ -54,7 +54,7 @@ namespace NovarinRPCManager
 				{
 					Log("INFO", $"Join Secret received: {secret}");
 					string[] splitSecret = secret.Split('+');
-					string url = $"https://novarin.cc/discord-redirect-place?id={splitSecret[0]}&autoJoinJob={splitSecret[1]}";
+					string url = $"https://novarin.co/discord-redirect-place?id={splitSecret[0]}&autoJoinJob={splitSecret[1]}";
 					Process.Start(url);
 					Environment.Exit(0);
 					return;
@@ -177,7 +177,7 @@ namespace NovarinRPCManager
 				}
 				catch (Exception) { }
 				string[] splitSecret = secret.Split('+');
-				string url = $"https://novarin.cc/discord-redirect-place?id={splitSecret[0]}&autojoinJob={splitSecret[1]}";
+				string url = $"https://novarin.co/discord-redirect-place?id={splitSecret[0]}&autojoinJob={splitSecret[1]}";
 				Process.Start(url);
 				Environment.Exit(0);
 				return;
@@ -284,7 +284,7 @@ namespace NovarinRPCManager
 				using (WebClient client = new WebClient())
 				{
 					client.Headers.Add("user-agent", GetUserAgent());
-					string receivedClientData = client.DownloadString("https://novarin.cc/marketplace/productinfo?assetId=" + placeId);
+					string receivedClientData = client.DownloadString("https://novarin.co/marketplace/productinfo?assetId=" + placeId);
 					return JsonConvert.DeserializeObject<PlaceInfo>(receivedClientData);
 				}
 			}
@@ -302,7 +302,7 @@ namespace NovarinRPCManager
 				using (WebClient client = new WebClient())
 				{
 					client.Headers.Add("user-agent", GetUserAgent());
-					string receivedClientData = client.DownloadString("https://novarin.cc/app/api/games/playersInJob?jobid=" + jobId);
+					string receivedClientData = client.DownloadString("https://novarin.co/app/api/games/playersInJob?jobid=" + jobId);
 					return JsonConvert.DeserializeObject<PlayersInJob>(receivedClientData);
 				}
 			}
