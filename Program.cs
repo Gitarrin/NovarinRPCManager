@@ -13,7 +13,7 @@ namespace NovarinRPCManager
 	{
 		public static Process robloxGameProccess;
 		private const long CLIENT_ID = 1353418280349470801;
-		private const string GAME_BASE = "https://novarin.cc";
+		private const string GAME_BASE = "https://novarin.co";
 		public static RPCLaunchArgs launchArgs = new RPCLaunchArgs();
 
 		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
